@@ -1,0 +1,59 @@
+Cours du 28/07/2023 sur les commandes linux
+Dans /usr/share/man on peut trouver des pages de manuel
+En ce qui concerne les droits spécifiques, comme on avait vu avec -rwsr--r--, le s en est un mais il y en a d'autres.
+comment donner ces droits spécifiques aux fichiers/dossiers qu'on veut?
+
+Que veut dire le droit d'éxécution sur un répertoire? avoir le droit d'executer des choses dedans (faire un cd, un ls)
+
+Les droits spécifiques : 
+- suID, ce droit s'applique pour l'utilisateur - --s --- ---, pour le placer en chmod, c'est 4000. Le s ne remplace pas le x, il se met par dessus. Quand le s est minuscule, alors le x est là, sinon non.
+- sgID, un droit qui s'applique sur la partie groupe - --- --s ---, on le met sur des répertoires en général. Exemple on donne les droits à des utilisateurs de mettre des  fichiers dans un répertoire, ces fichiers leur appartiennent, ainsi qu'a leur groupe. Placer le sgID sur le répertoire permet de faire un héritage de permission, tous les fichiers déposés dedans vont tous hériter du groupe du répertoire. Le groupe du répertoire va remplacer celui des utilisateurs, chomd 2000
+- le sticky bit, pour aller le voir on peut lister la racine /, on peut voir le répertoire tmp, avec les droits        drwxrwxrwt, c'est le t qui nous intéresse. chmod 1000. A quoi sert il? si dans un répertoire on donne tous les droits, tout le monde peut modifier ce que tout le monde fait, même si les fichiers ont des droits plus restreints. Les fichiers héritent des droits du répertoire(pas vraiment un héritage mais plutôt une priorité des droits du répertoire sur ceux des fichiers). Pour éviter ça et faire en sorte que seuls les propriétaires des fichiers puissent agir dessus, il faut ajouter cette option.
+
+
+/home/user/.profile : propre à un user, exécuté à sa connexion
+/home/user/.bashrc : exécuté à l'ouverture d'un shell bash par le user
+
+dans /etc/profile, on a des scripts shell qui s'exécutent quand n'importe quel user se connecte
+pareil pour /etc/bash.bashrc
+
+gestion des paquets : 
+un paquet c'est un programme pret à l'emploi
+on utilise apt install pour les installer
+un paquet peut avoir des dépendances, qui sont automatiquement installées (ou pas, ça dépend des commandes)
+
+voir page 56 cours Initiation_Linux
+
+différence apt-get et apt : apt est un peu plus récent et cumule d'autres commandes que apt-get, c'est quasi pareil
+
+apt-cache search <nom_du_paquet> : permet de voir si le paquet existe dans le miroir
+quand on installe un paquet, c'est par forcément la version la plus à jour. Par défaut c'est la version la plus stable
+Si on veut la version la plus à jour, on regarde déjà avec apt update.
+il y a aussi la commande dpkg, qui permet d'installer des paquets un par un sans prendre en compte les dépendances, et elle a plein d'options utiles, par exemple dpkg-query qui permet de savoir quel fichier a été installé par quel package, etc
+Pour voir ce qu'il se passe en mémoire, on peut utiliser un petit utilitaire appelé htop
+On veut une version précise d'un paquet, comment on fait? Voir dans /etc/apt/source.list, c'est là dedans que se trouve nos dépots, on pourrait éventuellement ajouter des lignes pour ajouter des dépots où aller chercher nos paquets. Donc on peut aller sur internet pour voir s'il y a pas un dépot qui correspond à ce qu'on cherche et l'ajouter.
+Pour faire ça on va chercher les sources du paquet qu'on veut et on les recompile
+les archives pour unix ne sont quasi jamais au format zip, par contre du tar.xz, tar.gz, ...
+comment faire pour télécharger dans la vm? on peut utiliser wget <lien> ou curl <lien>, l'archive se trouve à l'endroit où on a lancé la commande. Mainetenant il faut décompresser l'archive, on va utiliser la commande tar
+tar sert d'abord à réunier les fichiers pour en faire une archive, puis pour compresser, il faut utiliser gzip
+les commandes à connaître : 
+	tar -cvf <nom_archive.tar> <les fichiers> : permet d'archiver, c pour archive, v pour verbose pour voir ce qu'il fait, et f pour préciser que c'est des fichiers et pas des bandes magnétiques
+	gzip <nom_archive.tar> : pour compresser
+on peut faire ces deux commandes en une seule : 
+	tar -cvzf <nom_dossier>
+
+ensuite pour désarchiver : 
+	tar -xvzf <nom_archive>
+
+maintenant qu'on a décompressé l'archive, comment faire pour compiler puis installer tout ça ?
+déjà on va voir le readme, on regarde les pré requis et on install ce qu'il faut
+Une fois que c'est fait, toujours dans le readme on a les instructions pour compiler, on les suit
+Enfin, les instructions pour installer, pareil dans le readme, on suit
+On peut aussi voir, toujours dans le README, qu'il y a des options de build qui permettent d'activer certaines fonctionnalités
+
+attention pour installer par exemple apache ou nginx, on utilisera toujours cette méthode et pas le miroir pour justement avoir accès à ces options qui peuvent permettre d'enlever des fonctionnalités inutiles, d'éventuelles sources de vulnérabilité, etc. On peut se faire des dépots internes avec des versions compilées maison pour nous 
+
+
+commandes pour rechercher : 
+locate recherche un fichier par son nom, nécessite une mise à jour de la base (sudo updatedb)
+find recherche un fichier sur le disque en le parcourant avec ou - quoi - que faire avec

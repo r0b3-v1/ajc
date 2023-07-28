@@ -1,0 +1,69 @@
+notes prises à partir de l'aprem
+
+1.Gestion des droits: 
+	Je n'ai pas accès à root, mais j'ai sudo à la place. 
+	On peut regrouper des users pour leur accorder des permissions. voir schéma page 48 cours initiation linux
+	les commandes usuelles pour gérer les utilisateurs : 
+		adduser [pseudo] [o/groupe] -> crée un nouvel utilisateur et un répertoire home associé, dans le groupe spécifié
+		passwd [pseudo] -> changer le mot de passe
+		deluser [pseudo] -> supprime un utilisateur 
+		ETC... ( voir pdf )
+
+Pour passer en mode root : sudo su -
+
+qu'est ce qui se passe dans le système quand on ajoute un utilisateur? On va voir 
+dans etc, fichiers : 
+		passwd:	On peut voir à la dernière ligne, l'utilisateur a été ajouté, ainsi que d'autres. C'est un fichier de conf où chaque champ, séparé par :, représente une information d'un utilisateur
+			Premier champ: nom de login, 2eme : password(plus géré ici), 3eme : userID, le 4me: le groupeID, 5eme : infos sur l'user, 6eme : chemin du répertoire perso, dernier : shell utilisé par le user
+			Si je supprime la ligne dans le fichier, on supprime le user
+			Dedans il y a aussi des comptes qui sont pas ceux des utilisateurs, comme par exemple les comptes mail, games ou autres. Ce sont des comptes de service. Par exemple mail est un user qui sert à faire fonctionner le serveur de mail. Ils ont très peu de droits sur le système, on peut pas se logger avec mais les processus qui servent à faire fonctionner ces services sont exécutés avec ce compte. ça sert à la sécurité. Comme ça si les services sont pénétrés et que les comptes sont hack, on peut rien faire avec.
+			Qu'est ce qu'un service? c'est un daemon. Une binaire qui donne un service, un processus. Par exemple pour ssh il permet la connexion au réseau via ssh. Autre exemples Apache ou NGINX sont des services qui vont écouter naturellement sur le port 80 pour donner des services web. Encore : service des logs, etc...
+			Tous les services dans passwd ne sont pas forcément existants dans le système, certains sont installés par défaut.
+			Quand il y a un d dans le nom du service, c'est que c'est un daemon. Exemple : sshd c'est mon serveur ssh.
+			
+
+2.Les fichiers : 
+quand on fait ls -l, on voit plusieurs colonnes : 
+la 1: c'est les permissions, la 2 c'est le nombre de fichiers, la 3eme c'est le propriétaire, la 4eme c'est le groupe
+les groupes: dans etc/group, on a tous les groupes, avec le nom, le GID. Quand un user crée un fichier, il est par défaut propriétaire et dans le groupe du user.
+On a aussi addgroup pour ajouter des groupes. Ces commandes (adduser, addgroup, etc) écrivent dans les fichiers de conf, principalement dans /etc/passwd et /etc/group
+
+
+
+3.Les permissions : 
+On a des commandes qui permettent de gérer les droits 
+chown pour changer le owner d'un fichier
+chgrp pour changer le groupe d'un fichier
+ces actions ne peuvent être effectuées que par root
+d rwx rwx rwx : le 1er bloc: droit pour propriétaire, le 2 : droit pour le groupe, le 3 : droits pour les autres
+r : lecture, w : écriture, x : exécute. Le d au début indique si c'est un dossier ou pas.
+Concretement : si userA crée un fichier et ne change pas les droits par défaut (-rw-r--r--) alors userB ne pourra pas écrire dans le fichier.
+
+un utilisateur peut faire partie de plusieurs groupes, mais il a un groupe principal de connection, celui qu'on retrouve dans /etc/passwd 
+On peut renseigner le groupe avec la commande adduser aussi.
+
+EXERCICE : creation d'un user, il faut que son groupe primaire soit dev 
+Correction : 
+	Méthode 1 -> on crée l'utilisateur en étant root avec adduser user 
+ensuite on crée le groupe avec addgroup dev puis on assigne l'utilisateur au 
+groupe avec la commande usermod -g dev user si on veut lui mettre un groupe 
+secondaire on peut faire usermode -aG groupe user 
+	Méthode 2 -> faire useradd au lieu de adduser. C'est plus compliqué car pas auto, il va falloir renseigner 
+les infos du user (son id, gid, home, etc) example : useradd -M /home/bob --gid 
+dev -uid 2000 -s /bin/bash bob passwd permet de changer le mot de passe, si on 
+est root on peut changer celui de tout le monde, sinon on ne peut changer que 
+son mot de passe.
+
+quand on change le mot de passe d'un utilisateur, on affecte le fichier des mots de passe
+ce fichier est /etc/shadow
+dedans on a le nom d'utilisateur et le hash du mdp en md5
+
+Au final, les 3 fichiers à connaître dans /etc/ sont : 
+- passwd
+- group 
+- shadow
+
+autre commande utile : whereis pour trouver des fichiers dont on ne connait pas l'emplacement
+
+Comment se fait il qu'on puisse changer son mot de passe quand on est pas root? Puisque ça implique d'écrire dans le fichier shadow qui n'est accessible en écriture que pour root? C'est grace à des permissions spéciales : 
+la commande passwd se trouve dans /bin/, quand on regarde les permissions , on voit -rwsr-xr-x, le s qui remplace le x est un droit spécifique, c'est le suid, quand il est placé, on devient root pour l'exécution de la commande, ce qui permet d'écrire dans shadow

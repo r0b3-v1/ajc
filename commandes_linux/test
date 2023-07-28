@@ -1,0 +1,14 @@
+#/bin/bash
+# cool
+
+void test(int* val){
+	scanf("%d", val);
+}
+
+int main {
+	int test = 10;
+	printf("je test vim pour faire du c"); 
+	scanf("%d", &test);
+	printf("vous avez entré %d", test);
+	return 0;
+}
