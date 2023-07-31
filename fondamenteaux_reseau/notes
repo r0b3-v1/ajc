@@ -1,0 +1,47 @@
+cours du 31/07/2023 (feat mes hémorroïdes) sur les fondamenteaux réseau (et un peu de commandes linux)
+Page 65: commandes système très importantes : 
+sort 
+wc
+uniq
+et surtout grep, cut et sed
+
+________les flux de redirection, qu'est ce que c'est? avec certains symboles, on peut manipuler l'output et l'input de nos commandes
+voir page 66
+la sortie standard c'est l'écran de la console, on peut en changer avec ces symboles
+commande > fichier : résultat de la commande va écraser le contenu du fichier
+commande >> fichier : résultat de la commande va être ajouté à la fin du fichier
+
+script.sh < fichier : on donne au scritp shell le contenu du fichier
+commande1 | commande2 : on applique la commande2 au résultat de la commande1, exemple : ls -l /etc | less
+script 2> fic_erreur : le 2> renvoie vers le canal des erreurs, concretement ici, toutes les erreurs lors de l'exec du script vont se retrouver dans le fichier
+script.sh 2>&1 fic.log : ici le &1 représente le flux standard, donc ici on aura les deux dans le fichier, les erreurs et les résultats normaux du script
+
+________Surveiller le sytème
+il va falloir regarder les processus
+ps : afficher les processus, ex : ps aux = all users execution, on voit tout 
+top : processus linux
+kill : terminer un processus , kill -l : affiche plein de trucs qui commencent pas SIG, pourquoi? La commande kill envoie des signaux au processus. Il y en a 64 différents, quand on fait kill pid, on envoie le signla SIGTERM au processus (terminate). Pour préciser quel signal envoyer, il faut préciser le numéro du signal, ex kill -9 pid. Pourquoi ces différences? en fonctions des processus parents-enfants, on peut avoir besoin d'un signal ou d'un autre 
+exemple : SIGKILL tue direct le processus, tandis que SIGTERM lui laisse le temps de dire à ses processus enfants de se terminer avant. SIGKILL c'est quand on peut pas arrêter le processus normalement
+Ctrl Z : mets en pause le processus = SIGSTOP
+Ctrl C : arrête le processus = SIGTERM
+commande & : execute la commande en tache de fond (ex : pause 60 & = fait une pause de 60 secs en tache de fond)
+nohup commande &: pareil mais la commande va continuer à tourner en arrière plan même si on se déconnecte de la machine (veut dire no hang up)
+On veut mettre un processus en arrière plan : bg %pid
+On veut faire revenir en avant plan un processus : fg %pid
+jobs : affiche les processus en arrière plan
+Voir le pdf pages 70...
+
+at : permet de lancer une commande plus tard, à une heure précise (contrairement à crontab, elle ne s'exécute qu'une seule fois) cette commande n'existe plus par défaut
+exemple : at 13:00
+
+Les cron / crontab : c'est le planificateur de taches officiel, c'est un service qui tourne dans la machine et qui gère les taches planifiées
+$ crontab permet de programmer l'exécution régulière d'un programme.
+exemple crontab -e, il va demander l'editeur de texte et on va modifier un fichier où on va écrire nos tâches voir les exemples page 79
+
+systemctl permet de visualiser les services qui tournent dans la machine
+systemctl status cron : voir le status du service qui gère les cron
+on a aussi stop, start, et restart
+pouvoir arrêter/redémarrer un service est très important car quand on fait une modif de configuration d'un service, il faut le redémarrer pour qu'elle soit prise en charge car quand il redémarre, il va relire le fichier de config
+derrière systemctl, il y a quelque chose qui s'appelle SYSTEMD, explication : en embarqué systemctl dans 90% des cas on l'aura pas, cette commande n'existe pas et donc SYSTEMD ne sera pas là non plus. Avant ces 2 trucs ça marchait différemment, on parlait de démarrage system V, c'était comme ça qu'on arrêtait/démarrait les services, le problème c'est que ne pas comprendre comment fonctionne system V pose problème pour comprendre systemctl
+exemple de test systemctl : on a un serveur ssh, c'est donc un service, on peut modifier sa config dans /etc/ssh/sshd_config, dedans on peut mettre PermitRootLogin à yes et ensuite faire un systemctl restart ssh et maintenant on peut se connecter en ssh sur le compte root directement (bon pas moi parce que je suis dans le cloud)
+on pourrait s'installer un serveur web dans la vm et ensuite vérifier qu'on l'a bien installé et que le service est running, puis aller changer le fichier de config puis restart le service
