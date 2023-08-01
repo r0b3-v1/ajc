@@ -18,3 +18,16 @@ awk
 exercice : installation d'un serveur ftp, vsftpd
 explication d'abord : ftp = file tranfer protocol. idée: depuis une machine cliente, on peut se connecter sur un serveur ftp où on peut déposer des fichiers ou en télécharger. 
 on peut déjà installer le client en faisant simplement apt install ftp. Par défaut on se connecte au port 21 ou 20
+on fait ce qu'on veut niveau configuration, mais rester simpliste.
+
+correction : 
+
+1 installation : 
+apt search vsftpd
+apt install vsftpd
+systemctl status vsftpd
+
+2 configuration :
+on va dans /etc/vsftpd.conf
+
+pour faire en sorte que notre FTP soit chiffré, il faut en plus ajouter le SSL/TLS
