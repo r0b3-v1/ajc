@@ -1,0 +1,20 @@
+jour 2
+pour les cron, on peut certes mettre des commandes, mais on pourrait aussi mettre ces commandes dans un fichier script et dire au cron d'exécuter ce script au lieu d'écrire la commande directement dans la cron. 
+par exemple, on crée un script archive.sh dans laquelle on met notre commande, au début il faut mettre un shebang qui va indiquer dans quel shell les commandes sont entrées: #!/bin/bash, puis on met notre commande et on donne les droits d'éxecution qu'il faut au script. Ensuite on l'appelle dans notre crontab en faisant . path
+
+pourquoi quand on est dans un répertoire, on ne peut pas directement exécuter notre script en tapant son nom et on est obligé de faire ./nomscript ? 
+parce qu'il y a des variables d'environnement, qu'on peut voir en tapant env
+parmis ces variables, il y en a une qui s'appelle PATH, qui contient des chemins du système, séparés par les :, ces chemins pointent vers toutes mes commandes, ce qui nous permet de taper nos commandes de n'importe où, car c'est d'abord là que notre système va aller chercher
+
+________commandes de filtrage : voir https://jean-luc-massat.pedaweb.univ-amu.fr/ens/asr/cours-linux/shell-scripts/filtres.html
+cat, more, less
+grep : grep [options] regexp [fichiers]
+cut : coupe par colonne les fichiers, par exemple cut -c5 <fichier> va afficher la 5eme colonne, plus intéressant, on peut sélectionner des champs, cut -d<séparateur> -f<sélection_champs> <fichiers>, cut -d":" -f1,3-4,6 /etc/passwd 
+wc :
+tr 
+sed 
+awk
+
+exercice : installation d'un serveur ftp, vsftpd
+explication d'abord : ftp = file tranfer protocol. idée: depuis une machine cliente, on peut se connecter sur un serveur ftp où on peut déposer des fichiers ou en télécharger. 
+on peut déjà installer le client en faisant simplement apt install ftp. Par défaut on se connecte au port 21 ou 20

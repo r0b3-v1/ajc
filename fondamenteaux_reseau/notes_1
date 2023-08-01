@@ -45,3 +45,12 @@ pouvoir arrêter/redémarrer un service est très important car quand on fait un
 derrière systemctl, il y a quelque chose qui s'appelle SYSTEMD, explication : en embarqué systemctl dans 90% des cas on l'aura pas, cette commande n'existe pas et donc SYSTEMD ne sera pas là non plus. Avant ces 2 trucs ça marchait différemment, on parlait de démarrage system V, c'était comme ça qu'on arrêtait/démarrait les services, le problème c'est que ne pas comprendre comment fonctionne system V pose problème pour comprendre systemctl
 exemple de test systemctl : on a un serveur ssh, c'est donc un service, on peut modifier sa config dans /etc/ssh/sshd_config, dedans on peut mettre PermitRootLogin à yes et ensuite faire un systemctl restart ssh et maintenant on peut se connecter en ssh sur le compte root directement (bon pas moi parce que je suis dans le cloud)
 on pourrait s'installer un serveur web dans la vm et ensuite vérifier qu'on l'a bien installé et que le service est running, puis aller changer le fichier de config puis restart le service
+
+________Les logs : 
+avant la version debian 12, on a un service qui s'appelle rsyslog, son fichier de conf se trouve dans /etc/rsyslog.conf
+c'est lui qui va enregistrer tous les logs du système, qui se trouvent dans le répertoire /var/log
+c'est avec ce fichier qu'on va comprendre où sont rangés et comment sont organisés les différents fichiers de log
+on voit dans la partie RULES qu'il y a des tableaux, avec la correspondance entre les services et les fichiers où se trouvent leurs logs. ça se présente sous la forme service.* path, où * est la sévérité du log (voir tableau sur le doc de l'univ)
+par exemple mail.info /var/log/toto.log va log tous les messages à partir de la sévérité info dans le fichier toto. Si on veut juste la catégorie info, on met mail.=info
+dans le fichier /etc/log/syslog, il y a tous les messages
+
