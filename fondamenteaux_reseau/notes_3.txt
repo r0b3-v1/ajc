@@ -1,0 +1,27 @@
+dans les anciennes distributions debian, systemctl (basé sur systemD) n'existe pas, à la place on a systemV
+Pour gérer les services, on s'y prend donc autrement.
+lancement de la machine avec systemV : 
+BIOS -> amorce (GRUB) -> charge noyau en RAM -> choisi un runlevel
+
+Voir le powerpoint systemV du cours pour plus d'infos : 
+
+Il y a un fichier inittabl qui contient la configuration d'init, dedans on a le runlevel par défaut (souvent 2)
+Le plus important /etc/init.d, il y a les scripts de lancement des daemons. dans les nouvelles debian, ce dossier existe encore avec certains scripts, pour la rétrocompatibilité
+/etc/default stocke les fichiers de configuation des daemons et services. La plupart du temps il s'agit des paramètres de lancement. La configuation a probablement parler de l'application se trouve dans /etc/
+/etc/rc<i>.d stocke les scripts runlevel, dedans il y a des liens symboliques qui commandent l'initialisation des services ou leur fin. Des scripts shell en cascade. 
+Tous les services ne sont pas démarrés depuis le runlevel, par exemple le réseau c'est pas le cas. Pourquoi? Quand on regarde inittab, on voit qu'il y a un runlevel rcS qui s'exécute avant qui lui va se charger de le faire
+
+imaginons que je veuille installer un petit service que j'ai codé en C qui se lance en même temps que les autres dans le runlevel, comment fait-on?
+il faut soit utiliser des commandes dédiées aux distributions, soit créer un script shell dans init.d pour créer un script qui démarre mon daemon (ma binaire) pour pouvoir faire start/stop/etc sur mon service, puis il faut aller dans le rc et faire un lien symbolique dedans qui pointe vers le script shell pour qu'il soit lancé au démarrage
+il y a une commande init qui permet d'appeler le runlevel spécifié. Par exemple init 6 appelle le runlevel 6 et reboot la machine
+
+Ensuite, powerpoint systemD : 
+remplace systemV
+les vraies différences: sysD s'occupe de plein de choses dans le système et pas que des daemons
+articles intéressants : 
+https://lea-linux.org/documentations/Systemd
+par exemple pour les logs, on a journalctl
+tous les services de systemD sont dans /lib/systemD/system
+par exemple le fichier qui sert à faire nos commandes start, restart , etc sur le service ssh est dedans, il s'appelle ssh.service
+donc contrairement à systemV, on ne se sert plus d'un script shell pour déclarer un service, mais d'un fichier .service qui a une syntaxe spécifique. quand on fait systemctl restart ssh, en fait on fait systemctl restart ssh.service implicitement ( à constater en faisant tab, il va le proposer)
+
