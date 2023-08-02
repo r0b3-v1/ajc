@@ -1,0 +1,36 @@
+commencement de la partie réseau à proprement parler
+le protocole TCP/IP
+internet != web
+on parle de pile(stack) TCP/IP, elle est implémentée dans le noyau de l'OS. Fonctionne en client serveur
+Modèle OSI : modèle qui régit tout type de protocole réseau, défini par l'ISO (international standardisation organisation)
+c'est un modèle par couches. c'est quoi une couche? "Un ensemble de services accomplissant un but précis"
+chaque couche s'occupe d'une chose. Les couches communiquent entre elles, les couches inférieures sont plus proches du matériel, les supérieures, plus proches des applications
+Il y a 7 couches dans le modèle
+
+En physique : 
+1-La couche physique : les cables
+2-Liaison : la carte réseau (wifi, ethernet)
+
+Dans l'OS :
+3-reseau 
+4-transport
+5-session : pour accéder à un service sur une machine, il nous faut une session d'accès, d'où l'existence de cette couche
+6-présentation : façon dont on présente les données à l'application, exemple si les données sont chiffrées
+7-applications : les applications réseaux, par exemple http, smtp pour les mails, ftp, dns, dhcp
+
+
+Pour comprendre l'idée, imaginons 2 machines A et B qui doivent communiquer suivant un protocole respectant le modèle OSI
+
+A a un navigateur web et B un serveur web
+ici couche 7 A de c'est le navigateur web
+la demande de A va descendre toutes les couches de la machine A pour atteindre B. à chaque couche, la demande va être augmentée des infos de la couche qu'elle traverse. Le résultat est une trame, qui contient les infos de toutes les couches et qui va être envoyée dans le réseau vers B
+Ensuite quand elle arrive dans la machine B, elle va remonter toutes les couches jusqu'à arriver à l'application. Puis rebelote de B vers A pour envoyer une réponse
+C'est ce qu'on appelle l'encapsulation, la demande est encapsulée par toutes les données des couches.
+
+Il y a aussi le modèle internet, qui ne contient que 5 couches, parce qu'ils ont fusionné session et représentation et l'ont mit dans application ( donc 3 couches supérieures fusionnées en une seule)
+Chaque couche a des protocoles pour faire certaines choses
+1: nous intéresse pas
+2: protocole ethernet II
+3: protocoles IP (internet protocol), ICMP (Internet Control Message Protocol), ARP (Adress Resolution Protocol), + protocoles de routage
+4: protocoles TCP (Transport Control Protocol), UDP (User Datagram Protocol)
+5: HTTP, SMTP, FTP, DNS, DHCP, NTP (pour que les machines soient à la même heure), etc
