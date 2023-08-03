@@ -8,3 +8,4 @@ le protocole ICMP : envoie des messages d'infos
 principe du cluster : dans un réseau, on aime mettre des serveurs dans un même cluster, on clone des serveurs, comme ça quand un client veut interroger, il se connecte sur l'ip du cluster qui va rediriger vers un des serveurs actifs, les autres serveurs attendent que ceux actifs aient un problème, pour le savoir ils vont ping les serveurs actifs
 
 le protocole ARP : il demande la mac adress des machines auxquelles on veut s'adresser pour les identifier
+on peut faire arp -a dans la console windows et il va nous afficher une table de correspondance entre mac adress et ip
