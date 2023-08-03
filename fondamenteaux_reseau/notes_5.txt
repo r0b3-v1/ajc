@@ -1,4 +1,5 @@
 jeudi
+____________On est encore sur la couche 3, réseau
 dans un serveur, on veut éviter que l'adresse ip change périodiquement (sinon les clients devraient connaître à chaque fois la nouvelle adresse ip), donc on lui donne une adresse fixe et on ne passe pas par le dhcp
 en revanche pour des machines clientes, on laisse le dhcp leur allouer une adresse automatiquement
 
@@ -9,3 +10,67 @@ principe du cluster : dans un réseau, on aime mettre des serveurs dans un même
 
 le protocole ARP : il demande la mac adress des machines auxquelles on veut s'adresser pour les identifier
 on peut faire arp -a dans la console windows et il va nous afficher une table de correspondance entre mac adress et ip
+si arp n'a pas la mac adress de la machine avec laquelle on veut se connecter, il va envoyer un signal broadcast pour interroger le réseau pour avoir l'info
+les protocoles de routage dynamiques : il y en a deux: 
+	RIPV3
+	OSP
+entre deux machines qui ne sont pas sur le même réseau, il faut mettre un routeur, il aura deux cartes réseau, une pour le réseau de la première machine et une autre pour la deuxième
+pour un gros réseau comme le web, on a besoin d'immeubles de routeurs pour lier plein de réseaux entre eux. On utilise les protocoles de routage qui vont découvrir le chemin eux mêmes. Les routeurs se parlent entre eux pour découvrir les routes et trouver les chemins les plus courts
+les routeurs se parlent entre eux avec des messages ICMP pour savoir s'ils sont encore vivants. Ils se parlent naturellement toutes les 30 sec quand ils sont adjacents
+
+___________couche 4 : transport
+
+deux protocoles: UDP (user datagram protocol) et TCP(transmission control protocol)
+notion qui apparait : ports, pour transporter, il faut un port d'écoute. SSH:22, HTTP:80, SMTP:25, FTP:21
+
+TCP	-> Il est en "mode connecté"
+	-> Notion d'accusé de réception
+	-> Controle de flux
+
+le mode connecté : la machine A qui veut se connecter sur B, elle va lui envoyer une demande de synchronisation (message SYN)
+B va lui répondre par un acquittement (ack pour acknowledge) et lui fait à son tour une demande de synchronisation, ce à quoi répond A par également un acquittement. Une fois cela fait, on est en mode connecté, on parle de circuit virtuel
+cet échange sert à savoir si A est bien A et que B est bien B pour éviter l'ip spoofing, donc il y a en plus une autre sécurité où le signe de A est identifié par un numéro.
+
+l'accusé de réception :  sert à palier au problème d'IP, quand on perd des paquets parce qu'IP découpe et qu'on réassemble, on a un risque de perte, donc TCP va envoyer un ack pour signifier qu'il a bien reçu les paquets envoyés
+
+controle de flux : mécanique des fenêtres glissantes. quand A envoit des paquets à B, elle a une windows size, c'est le nombre de paquets qu'elle peut envoyer à la fois, donc A va dire à B ma fenêtre de tir c'est 3 par exemple, B va répondre pareil moi aussi, et c'est parti pour l'envoi. Ensuite la fenêtre peut changer de taille, parce qu'on fait d'autres trucs, et du coup il faut dire à B que la fenêtre de tir a changé de taille, qui va devoir se réadapter
+
+UDP 
+juste les ports et les datas, pas de mode connecté, d'ack ou de controle de flux
+très léger et est utilisé pour des petites requêtes où on a pas besoin de transporter beaucoup de données ou des données sensibles 
+qui utilise TCP et UDP? 
+80(web)/TCP
+25(mail)/TCP
+21(FTP)/TCP
+streaming vidéo/UDP -> car on veut transporter rapidement
+télephonie IP/UDP
+53(DNS)/UDP
+
+_____________La pratique
+on va utiliser un analyseur de trames, comme par exemple wireshark
+dans la fenetre du haut on a les paquets, dans la seconde on a une représentation des couches qui composent la trame
+
+quand on communique, la machine client elle même ouvre un port aléatoire > 1023
+
+au final en simplifiant, ce qui passe dans le cable, la trame, on a dedans : mac source, mac destination, ip source, ip destination, port source, port destination, data
+
+_____________DNS
+
+c'est un service de la couche 7 (application)
+comment ça fonctionne?
+qu'est ce que c'est? pour certains services, il faut donner aux gens des adresses ip pour qu'ils se connectent au site, donc il faut nommer les machines 
+on parle de résolution DNS, on a un système qui permet de parler aux machines autrement que par leur IP. www.google.fr c'est le nom de la machine complet, on appelle ça un FQDN (Full Qualified Domain Name). Le serveur DNS fait une résolution de ce nom avec une adresse IP
+le www c'est le hostname de la machine, google c'est le domaine, fr c'est un TLD (Top Level Domain)
+
+commande pour interroger les serveurs dns pour voir s'ils fonctionnent : 
+nslookup
+quand on fait ça on peut ensuite mettre des noms de site pour avoir les adresse ip publiques associées
+quel est le serveur dns auquel on accède? On a un fournisseur d'accès, ils ont un domaine (par exemple orange.fr) donc par défaut quand une machine cliente utilise un dns, c'est celui du fai.
+il y a des serveurs dns publiques, tout le monde peut les utiliser, par exemple 8.8.8.8, 8.8.4.4, 1.1.1.1, tout le monde peut les utiliser. quand on est connecté dans le réseau d'un fai, on ne peut pas interroger le dns d'un autre fai
+donc par défaut, notre dns est celui de notre fournisseur d'accès, on alors les publiques si je le paramètre
+comment ça fonctionne? C'est un arbre distribué voir schéma
+la racine de l'arbre c'est le HINT (dns), les branches sont des TLD(comme .org. .fr. .com.), ce sont des serveurs dns. par exemple prenons bill.org, c'est un nom de domaine d'un dns d'une société
+au début, avant le dns, on avait un fichier hosts qui servait à associer nom de domaine et ip, d'ailleurs on l'a encore et il se trouve dans /etc/
+l'arbre dns vient remplacer ça, chacun va s'occuper de son domaine, et pour faire de la résolution de machine en machine, les serveurs dns se parlent
+admettons que je sois sur la machine marc.bill.org, son dns c'est bill.org, on veut accéder à dev.astek.fr
+donc quand on tape un nom de domaine dans notre navigateur, notre machine va d'abord regarder dans le fichier hosts si la corrspondance n'existe. Si ce n'est pas le cas, elle va interroger un serveur dns, lequel? Le sien donc dans notre cas bill.org, celui ci va répondre qu'il connait pas, mais il peut regarder dans son cache, car toutes les requetes qu'on lui demande, il les garde dans sa mémoire cache. S'il l'a, c'est bon, sinon le serveur dns va aller poser la question aux serveurs racines, tout en haut de l'arbre. Ceux ci le renvoient au dns qui gère le TLD demandé (ici .fr), lui va me trouver le serveur dns qui gère le domaine astek.fr, et enfin celui ci connaît l'adresse de dev.astek.fr et nous la donne
