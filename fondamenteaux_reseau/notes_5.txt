@@ -1,0 +1,10 @@
+jeudi
+dans un serveur, on veut éviter que l'adresse ip change périodiquement (sinon les clients devraient connaître à chaque fois la nouvelle adresse ip), donc on lui donne une adresse fixe et on ne passe pas par le dhcp
+en revanche pour des machines clientes, on laisse le dhcp leur allouer une adresse automatiquement
+
+le protocole ICMP : envoie des messages d'infos
+		les types de messages : ping est un message ICMP
+
+principe du cluster : dans un réseau, on aime mettre des serveurs dans un même cluster, on clone des serveurs, comme ça quand un client veut interroger, il se connecte sur l'ip du cluster qui va rediriger vers un des serveurs actifs, les autres serveurs attendent que ceux actifs aient un problème, pour le savoir ils vont ping les serveurs actifs
+
+le protocole ARP : il demande la mac adress des machines auxquelles on veut s'adresser pour les identifier
