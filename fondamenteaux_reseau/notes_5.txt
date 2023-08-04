@@ -74,3 +74,7 @@ au début, avant le dns, on avait un fichier hosts qui servait à associer nom d
 l'arbre dns vient remplacer ça, chacun va s'occuper de son domaine, et pour faire de la résolution de machine en machine, les serveurs dns se parlent
 admettons que je sois sur la machine marc.bill.org, son dns c'est bill.org, on veut accéder à dev.astek.fr
 donc quand on tape un nom de domaine dans notre navigateur, notre machine va d'abord regarder dans le fichier hosts si la corrspondance n'existe. Si ce n'est pas le cas, elle va interroger un serveur dns, lequel? Le sien donc dans notre cas bill.org, celui ci va répondre qu'il connait pas, mais il peut regarder dans son cache, car toutes les requetes qu'on lui demande, il les garde dans sa mémoire cache. S'il l'a, c'est bon, sinon le serveur dns va aller poser la question aux serveurs racines, tout en haut de l'arbre. Ceux ci le renvoient au dns qui gère le TLD demandé (ici .fr), lui va me trouver le serveur dns qui gère le domaine astek.fr, et enfin celui ci connaît l'adresse de dev.astek.fr et nous la donne
+
+Vendredi : 
+
+
