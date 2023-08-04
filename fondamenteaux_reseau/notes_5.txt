@@ -77,5 +77,67 @@ donc quand on tape un nom de domaine dans notre navigateur, notre machine va d'a
 
 Vendredi : 
 
+rappel de jeudi, quand elle veut faire de la résolution, la machine va d'abord regarder dans son fichier host avant d'aller interroger un dns. On peut changer notre serveur dns par défaut en allant dans le fichier /etc/resolv.conf
+on peut mettre des dns secondaire, en ajoutant des lignes nameserver x.x.x.x
 
-a
+au final les 3 fichiers à connaître sont 
+	/etc/resolv.conf 
+	/etc/hosts 
+	/etc/hostname -> contient le hostname de notre machine, on peut le modifier pour le changer ou utiliser la commande hostnamectl. Il faut ensuite reboot la machine
+
+
+dans le fichier interface, on peut aussi ajouter une ligne qui correspond à la porte de sortie du réseau, c'est à dire l'adresse ip de la box de notre réseau privé
+gateway x.x.x.x
+on peut la trouver en faisant ip route
+une fois qu'on a fait ça, on peut tester que tout est ok en faisant un nslookup sur un domaine externe
+
+on va maintenant faire un serveur dns en utilisant bind9, il doit gérer un domaine, par exemple marco.edu
+une fois qu'on aura configuré le serveur DNS pour le client et le serveur puisse se parler en réseau, (il va falloir renseigner dans le client quel dns on doit utiliser en modifiant son fichier /etc/resolv.conf puis faire un nslookup pour voir si ça marche) une fois que ça marche, il faudra faire le test de résolution, en faisant un ping remy.nomdedomaine.TLD pour voir s'il me renvoie la bonne ip
+
+correction: 
+on installe bind9
+
+apt install bind9
+
+ensuite il faut faire de la config, il faut que notre machine qui héberge le server soit bien config
+donc faut que son hostname et le fichier hosts soient corrects
+
+dans /etc/hosts, on ajoute une ligne avec son ip liée à son hostname, on peut aussi ajouter le FQDN
+donc dans notre cas
+10.0.17.245 remy2 remy2.serv.gov
+pour pouvoir se pinger en local
+ensuite naivement on va voir dans les fichiers de conf qui se trouvent dans /etc/bind/
+instinctivement on ouvre named.conf, où il n'y a pas grand chose, on voit qu'il nous dit d'aller ajouter des zones dans named.conf.local et on voit les fichiers qu'il include
+donc on se doute que c'est pas ici qu'on va faire notre paramétrage, mais dans les autres fichiers
+c'est quoi les zones? Quand on crée un serveur dns il faut créer des zones dns que le serveur va gérer
+donc la première chose qu'on va faire c'est de déclarer notre zone dans le fichier named.conf.local, on peut voir un exemple de comment on fait les déclarations dans le fichier named.conf.default-zones
+dedans on voit par exemple une zone localhost ou encore . pour les root dns
+on va donc déclarer sa zone
+exemple : 
+# domain serv.gov
+zone "serv.gov" {
+	type master; 
+	file "/etc/bind/serv.gov";
+};
+
+ensuite on va devoir créer nos fichiers de zone, pour avoir des exemples, on regarde ceux déjà existant, comme /etc/bind/db.local, qui est celui de localhost
+vu que le format du fichier est un peu chiant, on va copier le modèle (db.empty) et le modifier
+cp db.empty serv.gov
+dans ce fichier, la première ligne est la plus importante le @ veut dire pour tous les domaines que tu gères, voilà qui a autorité (SOA = start of authority), on aurait pu remplacer le @ par serv.gov par exemple. donc il faut mettre que notre machine serveur dns est celle sur laquelle on fait nos paramétrages, cest à dire remy.serv.gov root.serv.gov
+ce qu'il y a dans les accolades on laisse, c'est des param pour des dns esclaves
+ensuite on a un enregistement de type NS (name serveur), il faut entrer le nom du serveur dns encore une fois, donc on remet la meme chose que pour la première ligne, meme si on l'a déjà fait
+pourquoi? Le soa c'est le premier serveur dns, mais en plus il faut le mettre en ns, parce qu'on peut en mettre plusieurs, si on avait des esclaves
+donc on met
+@	IN	NS	remy.serv.gov.
+ensuite pour enregistrer des machines, on met (le A veut dire adresse) 
+remy2	IN	A	10.0.17.245
+remy	IN	A	10.0.17.244
+
+en gros ça veut dire que quand on va tapper remy2.serv.gov, il va regarder la ligne de remy2 et l'ip correspondante, pareil pour remy
+pour vérifier si tout se passe bien, on affiche les logs dans une fenêtre
+tail -f /var/log/syslog
+et on restart dans une autre
+systemctl restart bind9
+puis on regarde le statut de bind9 avec systemctl
+ensuite pas oublier que la machine serveur est elle même cliente, donc il faut changer son fichier /etc/resolv.conf
+enfin on peut test avec nslookup en faisant nslookup remy.serv.gov
